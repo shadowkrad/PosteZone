@@ -9,3 +9,6 @@ services:
       - ./data:/data
     environment:
       - DB_PATH=/data/postezone.db
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - OCR_DEBUG_LOG=${OCR_DEBUG_LOG:-0}

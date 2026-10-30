@@ -5,6 +5,7 @@ FROM alpine:3.20
 RUN apk add --no-cache \
     nginx \
     curl \
+    openssl \
     sqlite \
     php83 \
     php83-fpm \
@@ -41,6 +42,7 @@ RUN id -u www-data >/dev/null 2>&1 || adduser -u 82 -D -S -G www-data www-data
 
 # Copy Nginx configuration
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/php-fpm.conf /etc/nginx/php-fpm.conf
 
 # Setup working directory
 WORKDIR /var/www/html

@@ -1,9 +1,9 @@
 <?php
-header('Content-Type: text/plain; charset=utf-8');
+if (PHP_SAPI !== 'cli') { http_response_code(403); exit("Eseguire da riga di comando."); }
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'api/db.php';
+require_once __DIR__ . '/../public/api/db.php';
 
 // Ensure table exists and clear it
 $pdo->exec("CREATE TABLE IF NOT EXISTS vie_incongruenti (

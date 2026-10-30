@@ -79,3 +79,14 @@ PosteZone/
 * **Backend:** PHP 8.3 FPM su Alpine Linux.
 * **Web Server:** Nginx.
 * **Database:** SQLite 3 (WAL mode).
+
+---
+
+## 🔐 Accesso area riservata
+
+`admin.html` e le API di scrittura (`admin_*`, `import`, `assign_zone`) richiedono utente e password (Basic Auth di nginx).
+Copia `.env.example` in `.env` e imposta `ADMIN_USER` / `ADMIN_PASSWORD` prima di avviare. Se la password non è impostata,
+il container ne genera una temporanea e la stampa nei log (`docker compose logs postezone`).
+
+Il log OCR di debug è disattivato; con `OCR_DEBUG_LOG=1` scrive in `data/ocr_debug.log` (contiene indirizzi dei destinatari).
+Lo script `scripts/import_excel_zones.php` non è più esposto sul web: si esegue solo da riga di comando.

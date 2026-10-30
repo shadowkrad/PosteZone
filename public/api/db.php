@@ -1,11 +1,10 @@
 <?php
 // PosteZone - Database connection (SQLite)
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 
+// Le API sono usate solo dalle pagine servite dallo stesso host: nessun CORS aperto.
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
     exit(0);
 }
 
@@ -61,4 +60,36 @@ try {
         'error' => 'Connessione al database SQLite fallita: ' . $e->getMessage()
     ]);
     exit;
+}
+
+/**
+ * Sceglie la regola civico applicabile tra quelle di una stessa via/localita.
+ * Le regole specifiche (PARI, DISPARI, INTERVALLO) hanno la precedenza su TUTTI.
+ */
+function pickRule(array $rows, ?int $civico): ?array
+{
+    $generic = null;
+    foreach ($rows as $row) {
+        $tipo = strtoupper($row['tipo_civico']);
+        if ($tipo === 'TUTTI') {
+            $generic = $generic ?? $row;
+        } elseif ($civico !== null) {
+            if (($tipo === 'PARI' && $civico % 2 === 0)
+                || ($tipo === 'DISPARI' && $civico % 2 !== 0)
+                || ($tipo === 'INTERVALLO' && $civico >= (int)$row['da_civico'] && $civico <= (int)$row['a_civico'])) {
+                return $row;
+            }
+        }
+    }
+    return $generic;
+}
+
+/** Coppie distinte via/localita presenti in un insieme di regole. */
+function distinctPlaces(array $rows): array
+{
+    $places = [];
+    foreach ($rows as $row) {
+        $places[$row['via'] . '|' . $row['localita']] = ['via' => $row['via'], 'localita' => $row['localita']];
+    }
+    return array_values($places);
 }

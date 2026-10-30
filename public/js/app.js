@@ -159,6 +159,8 @@ function sendOCRText(text) {
         
         if (res.success && res.match) {
             displayResult(res.data, res.data.parsed_civico);
+        } else if (res.ambiguous) {
+            displayAmbiguous(res.options, res.parsed_civico, res.message);
         } else {
             displayNoMatch(res.message || "Nessun indirizzo corrispondente trovato nell'etichetta.");
         }
@@ -178,6 +180,9 @@ function lookupData(queryString) {
         .then(res => {
             if (res.success && res.match) {
                 displayResult(res.data);
+            } else if (res.ambiguous) {
+                const civico = new URLSearchParams(queryString).get('civico');
+                displayAmbiguous(res.options, civico, res.message);
             } else {
                 displayNoMatch(res.message || "Indirizzo o codice non associato a nessuna zona.");
             }
@@ -188,7 +193,38 @@ function lookupData(queryString) {
         });
 }
 
+function clearAmbiguousOptions() {
+    const old = document.getElementById('ambiguous-options');
+    if (old) old.remove();
+}
+
+// Mostra l'elenco dei comuni quando la stessa via esiste in più località
+function displayAmbiguous(options, civico, message) {
+    displayNoMatch(message || 'Più vie corrispondenti: seleziona il comune.');
+    document.getElementById('match-via').innerText = 'Seleziona il comune';
+
+    const box = document.createElement('div');
+    box.id = 'ambiguous-options';
+    box.style.cssText = 'display:flex; flex-direction:column; gap:8px; margin-top:14px; width:100%;';
+
+    (options || []).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-search';
+        btn.style.cssText = 'padding:10px 14px; font-size:0.9rem;';
+        btn.textContent = `${opt.via} — ${opt.localita}`;
+        btn.addEventListener('click', () => {
+            const params = new URLSearchParams({ via: opt.via, localita: opt.localita, civico: civico || '' });
+            lookupData(params.toString());
+        });
+        box.appendChild(btn);
+    });
+
+    document.querySelector('#result-card .match-details').appendChild(box);
+}
+
 function displayResult(data, parsedCivico = null) {
+    clearAmbiguousOptions();
     const resultCard = document.getElementById('result-card');
     const zoneDisplay = document.getElementById('zone-display');
     const matchVia = document.getElementById('match-via');
@@ -238,6 +274,7 @@ function displayResult(data, parsedCivico = null) {
 }
 
 function displayNoMatch(message) {
+    clearAmbiguousOptions();
     const resultCard = document.getElementById('result-card');
     const zoneDisplay = document.getElementById('zone-display');
     const matchVia = document.getElementById('match-via');
@@ -325,7 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Estrai il nome pulito della via escludendo la parte del comune tra parentesi
         const viaRaw = viaInput.value.trim();
         const viaClean = viaRaw.replace(/\s*\(.*?\)\s*$/, ''); // Rimuove "(ANGHIARI)", "(AREZZO)" ecc.
-        
+        const locMatch = viaRaw.match(/\(([^()]*)\)\s*$/); // Il comune scelto dall'autocompletamento
+        const localita = locMatch ? locMatch[1].trim() : '';
+
         const civico = document.getElementById('search-civico').value.trim();
         
         if (viaClean === '') {
@@ -333,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        lookupData(`via=${encodeURIComponent(viaClean)}&civico=${encodeURIComponent(civico)}`);
+        lookupData(`via=${encodeURIComponent(viaClean)}&localita=${encodeURIComponent(localita)}&civico=${encodeURIComponent(civico)}`);
     });
 
     // Gestione salvataggio rapido zona da assegnare
