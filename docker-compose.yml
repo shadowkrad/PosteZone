@@ -4,7 +4,7 @@ services:
     container_name: postezone
     restart: unless-stopped
     ports:
-      - "8089:80"
+      - "3020:80"
     volumes:
       - ./data:/data
     environment:

@@ -34,8 +34,8 @@ docker compose up -d --build
 ```
 
 L'applicazione sarà accessibile all'indirizzo:
-* **Web App:** [http://localhost:8089](http://localhost:8089)
-* **Pannello Admin / Stradario:** [http://localhost:8089/admin.html](http://localhost:8089/admin.html)
+* **Web App:** [http://localhost:3020](http://localhost:3020)
+* **Pannello Admin / Stradario:** [http://localhost:3020/admin.html](http://localhost:3020/admin.html)
 
 ---
 
