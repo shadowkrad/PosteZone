@@ -44,10 +44,20 @@ if ($header) {
 }
 
 try {
+    $clear = isset($_POST['clear']) && $_POST['clear'] === 'true';
+    $replace = isset($_POST['replace']) && $_POST['replace'] === 'true';
+
+    // Copia di sicurezza prima di modificare lo stradario: se fallisce, non si importa nulla
+    $backupDir = dirname($dbPath) . '/backups';
+    if (!is_dir($backupDir) && !@mkdir($backupDir, 0775, true)) {
+        throw new \Exception('Impossibile creare la cartella dei backup.');
+    }
+    $backupFile = $backupDir . '/pre-import-' . date('Ymd-His') . '.db';
+    $pdo->exec("VACUUM INTO " . $pdo->quote($backupFile));
+
     $pdo->beginTransaction();
     
     // Se richiesto, svuota la tabella prima dell'inserimento
-    $clear = isset($_POST['clear']) && $_POST['clear'] === 'true';
     if ($clear) {
         $pdo->exec("DELETE FROM smistamento_vie");
         try { $pdo->exec("DELETE FROM sqlite_sequence WHERE name='smistamento_vie'"); } catch (\Exception $ex) {}
@@ -55,6 +65,28 @@ try {
     
     $stmt = $pdo->prepare("INSERT INTO smistamento_vie (via, localita, tipo_civico, da_civico, a_civico, zona_sigla, barcode) VALUES (:via, :localita, :tipo_civico, :da_civico, :a_civico, :zona_sigla, :barcode)");
     
+    // Modalità "sostituisci": elimina le regole esistenti delle sole vie presenti nel file
+    $replaced = 0;
+    if ($replace && !$clear) {
+        $keys = [];
+        $scan = fopen($fileTmpPath, 'r');
+        if ($hasHeader) {
+            fgetcsv($scan, 0, $delimiter);
+        }
+        while (($r = fgetcsv($scan, 0, $delimiter)) !== FALSE) {
+            if (count($r) >= 6 && trim($r[0]) !== '' && trim($r[5]) !== '') {
+                $keys[strtoupper(trim($r[0])) . "|" . strtoupper(trim($r[1]))] = [strtoupper(trim($r[0])), strtoupper(trim($r[1]))];
+            }
+        }
+        fclose($scan);
+
+        $del = $pdo->prepare("DELETE FROM smistamento_vie WHERE via = :via AND localita = :localita");
+        foreach ($keys as [$k_via, $k_loc]) {
+            $del->execute(['via' => $k_via, 'localita' => $k_loc]);
+            $replaced += $del->rowCount();
+        }
+    }
+
     $imported = 0;
     while (($row = fgetcsv($file, 0, $delimiter)) !== FALSE) {
         // Assicuriamoci che ci siano abbastanza colonne (almeno via, localita, zona_sigla)
@@ -91,7 +123,9 @@ try {
     
     echo json_encode([
         'success' => true,
-        'message' => "Importazione completata con successo. Inseriti $imported record."
+        'message' => "Importazione completata con successo. Inseriti $imported record"
+            . ($replace && !$clear ? ", sostituite $replaced regole esistenti" : '')
+            . ". Copia di sicurezza: " . basename($backupFile) . "."
     ]);
     
 } catch (\Exception $e) {

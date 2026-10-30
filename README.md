@@ -101,3 +101,10 @@ Copia ogni tanto `data/backups/` anche fuori dal server.
 ## 📦 Funzionamento offline
 
 Tesseract (OCR in italiano), il lettore di codici e i font sono in `public/vendor/`: l'app non dipende da internet dopo l'installazione.
+
+## 📥 Aggiornare le zone da Excel "Ripartizione Ufficio"
+
+1. `python scripts/build_ripartizione_csv.py "RipartizioneUfficio*.xlsx"` crea `import/ripartizione.csv` e `import/ripartizione_report.txt` (da leggere: vie nuove, conflitti, range non riconosciuti).
+2. In `admin.html` > Importa carica il CSV con l'opzione **Sostituisci le regole delle vie presenti nel file** (le altre vie restano invariate). Prima dell'importazione viene salvata una copia in `data/backups/pre-import-*.db`.
+
+Le regole per civico supportate sono `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`, `PARI_INTERVALLO` e `DISPARI_INTERVALLO`.

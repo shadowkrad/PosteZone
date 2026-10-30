@@ -4,7 +4,7 @@ set -e
 echo "[PosteZone] Initializing container environment..."
 
 # Ensure data directory exists
-mkdir -p /data
+mkdir -p /data /data/backups
 mkdir -p /var/www/html/data
 
 # If /data/postezone.db doesn't exist yet, copy initial seed database

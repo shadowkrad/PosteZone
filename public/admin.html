@@ -276,8 +276,12 @@
 
                     <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="clear-db" checked>
-                            <span>Svuota database esistente prima di importare i nuovi dati</span>
+                            <input type="checkbox" id="replace-streets" checked>
+                            <span>Sostituisci le regole delle vie presenti nel file (le altre vie restano invariate)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="clear-db">
+                            <span style="color: var(--accent-danger);">Svuota TUTTO il database prima di importare</span>
                         </label>
 
                         <button type="submit" class="btn-search" style="width: 100%;">Avvia Importazione</button>
@@ -297,9 +301,10 @@ VIA ROMA;MILANO;TUTTI;;;ZONA-A;
 VIA MILANO;MILANO;PARI;;;ZONA-B;
 VIA MILANO;MILANO;DISPARI;;;ZONA-C;
 CORSO VITTORIO EMANUELE;MILANO;INTERVALLO;1;50;ZONA-A;
+VIA DANTE;MILANO;DISPARI_INTERVALLO;1;99;ZONA-B;
 VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                 
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* `tipo_civico` può assumere i valori: `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* `tipo_civico` può assumere i valori: `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`, `PARI_INTERVALLO`, `DISPARI_INTERVALLO` (gli ultimi due limitano l'intervallo ai soli civici pari o dispari). Prima di ogni importazione viene salvata una copia di sicurezza del database.</p>
                 <p style="font-size: 0.75rem; color: var(--text-muted);">* `barcode` è facoltativo e serve per abbinare un codice a barre direttamente a una zona.</p>
             </section>
         </div>
@@ -420,6 +425,8 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                                 else if (r.tipo_civico === 'PARI') label = 'Pari';
                                 else if (r.tipo_civico === 'DISPARI') label = 'Dispari';
                                 else if (r.tipo_civico === 'INTERVALLO') label = `Civici ${r.da_civico}-${r.a_civico}`;
+                                else if (r.tipo_civico === 'PARI_INTERVALLO') label = `Pari ${r.da_civico}-${r.a_civico}`;
+                                else if (r.tipo_civico === 'DISPARI_INTERVALLO') label = `Dispari ${r.da_civico}-${r.a_civico}`;
 
                                 rulesHtml += `<div><strong>[${escapeHtml(label)}]</strong> → <span style="font-weight:800; color:var(--text-primary);">${escapeHtml(r.zona_sigla)}</span></div>`;
                             });
@@ -573,6 +580,8 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                             <option value="PARI" ${tipo_civico === 'PARI' ? 'selected' : ''}>Pari</option>
                             <option value="DISPARI" ${tipo_civico === 'DISPARI' ? 'selected' : ''}>Dispari</option>
                             <option value="INTERVALLO" ${tipo_civico === 'INTERVALLO' ? 'selected' : ''}>Intervallo</option>
+                            <option value="PARI_INTERVALLO" ${tipo_civico === 'PARI_INTERVALLO' ? 'selected' : ''}>Pari in intervallo</option>
+                            <option value="DISPARI_INTERVALLO" ${tipo_civico === 'DISPARI_INTERVALLO' ? 'selected' : ''}>Dispari in intervallo</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
@@ -581,7 +590,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                     </div>
                 </div>
                 
-                <div class="rule-range-fields" id="${rowId}_range" style="display: ${tipo_civico === 'INTERVALLO' ? 'grid' : 'none'};">
+                <div class="rule-range-fields" id="${rowId}_range" style="display: ${isRangeTipo(tipo_civico) ? 'grid' : 'none'};">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size:0.65rem;">Da Civico</label>
                         <input type="number" class="rule-da" value="${escapeHtml(da_civico)}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
@@ -612,6 +621,11 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             }
         }
 
+        // INTERVALLO, PARI_INTERVALLO e DISPARI_INTERVALLO usano i campi "da" e "a"
+        function isRangeTipo(tipo) {
+            return typeof tipo === 'string' && tipo.endsWith('INTERVALLO');
+        }
+
         function onRuleTipoChange(rowId) {
             const card = document.getElementById(rowId);
             const tipo = card.querySelector('.rule-tipo').value;
@@ -619,7 +633,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             const daInput = card.querySelector('.rule-da');
             const aInput = card.querySelector('.rule-a');
             
-            if (tipo === 'INTERVALLO') {
+            if (isRangeTipo(tipo)) {
                 rangeDiv.style.display = 'grid';
                 daInput.required = true;
                 aInput.required = true;
@@ -662,8 +676,8 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                 rules.push({
                     id: parseInt(card.dataset.id),
                     tipo_civico: tipo,
-                    da_civico: tipo === 'INTERVALLO' ? da : '',
-                    a_civico: tipo === 'INTERVALLO' ? a : '',
+                    da_civico: isRangeTipo(tipo) ? da : '',
+                    a_civico: isRangeTipo(tipo) ? a : '',
                     zona_sigla: zona
                 });
             });
@@ -748,6 +762,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             const formData = new FormData();
             formData.append('csv_file', selectedFile);
             formData.append('clear', document.getElementById('clear-db').checked ? 'true' : 'false');
+            formData.append('replace', document.getElementById('replace-streets').checked ? 'true' : 'false');
 
             fetch('/api/import.php', { method: 'POST', body: formData })
                 .then(res => res.json())

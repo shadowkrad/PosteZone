@@ -64,7 +64,7 @@ try {
 
 /**
  * Sceglie la regola civico applicabile tra quelle di una stessa via/localita.
- * Le regole specifiche (PARI, DISPARI, INTERVALLO) hanno la precedenza su TUTTI.
+ * Le regole specifiche (PARI, DISPARI, INTERVALLO, PARI_INTERVALLO, DISPARI_INTERVALLO) hanno la precedenza su TUTTI.
  */
 function pickRule(array $rows, ?int $civico): ?array
 {
@@ -74,9 +74,12 @@ function pickRule(array $rows, ?int $civico): ?array
         if ($tipo === 'TUTTI') {
             $generic = $generic ?? $row;
         } elseif ($civico !== null) {
+            $inRange = $civico >= (int)$row['da_civico'] && $civico <= (int)$row['a_civico'];
             if (($tipo === 'PARI' && $civico % 2 === 0)
                 || ($tipo === 'DISPARI' && $civico % 2 !== 0)
-                || ($tipo === 'INTERVALLO' && $civico >= (int)$row['da_civico'] && $civico <= (int)$row['a_civico'])) {
+                || ($tipo === 'INTERVALLO' && $inRange)
+                || ($tipo === 'PARI_INTERVALLO' && $inRange && $civico % 2 === 0)
+                || ($tipo === 'DISPARI_INTERVALLO' && $inRange && $civico % 2 !== 0)) {
                 return $row;
             }
         }

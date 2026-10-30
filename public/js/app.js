@@ -296,6 +296,10 @@ function displayResult(data, parsedCivico = null) {
         civicoDetail = 'Tutti i civici PARI';
     } else if (data.tipo_civico === 'DISPARI') {
         civicoDetail = 'Tutti i civici DISPARI';
+    } else if (data.tipo_civico === 'PARI_INTERVALLO') {
+        civicoDetail = `Civici PARI da ${data.da_civico} a ${data.a_civico}`;
+    } else if (data.tipo_civico === 'DISPARI_INTERVALLO') {
+        civicoDetail = `Civici DISPARI da ${data.da_civico} a ${data.a_civico}`;
     } else if (data.tipo_civico === 'INTERVALLO') {
         civicoDetail = `Civici da ${data.da_civico} a ${data.a_civico}`;
     }
