@@ -1,0 +1,22 @@
+# Operating System
+.DS_Store
+Thumbs.db
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+extracted_xlsx/
+
+# SQLite WAL and SHM files
+data/*.db-wal
+data/*.db-shm

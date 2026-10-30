@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PosteZone | Gestione Stradario & Zone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=5.0">
+    <style>
+        .template-box {
+            background: rgba(0, 75, 147, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Mobile-friendly Admin UI styles */
+        .admin-table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        .admin-table th, .admin-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+        .admin-table th {
+            background: #f8fafc;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+        .btn-action {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            color: var(--text-primary);
+        }
+        .btn-action:hover {
+            border-color: var(--text-primary);
+            background: var(--text-primary);
+            color: white;
+        }
+        .btn-action.btn-danger {
+            color: var(--accent-danger);
+        }
+        .btn-action.btn-danger:hover {
+            background: var(--accent-danger);
+            color: white;
+            border-color: transparent;
+        }
+        .btn-action.btn-success {
+            color: var(--accent-success);
+        }
+        .btn-action.btn-success:hover {
+            background: var(--accent-success);
+            color: white;
+            border-color: transparent;
+        }
+        .search-bar-row {
+            display: flex;
+            gap: 10px;
+        }
+        .search-bar-row input {
+            flex: 1;
+        }
+        
+        /* Modal for editing/resolving */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 12px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-card {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalFade 0.3s ease;
+        }
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #f8fafc;
+            flex-shrink: 0;
+        }
+        .badge-loc {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .rule-row-card {
+            border: 1px solid var(--card-border);
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+        }
+        .rule-row-cols {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 10px;
+        }
+        .rule-range-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span class="logo-icon">📯</span>
+            PosteZone
+        </div>
+        <nav>
+            <a href="/index.html" class="nav-link">Scanner</a>
+            <a href="#stradario" class="nav-link" id="nav-stradario">Stradario</a>
+            <a href="#anomalie" class="nav-link" id="nav-anomalie">Anomalie</a>
+            <a href="#importa" class="nav-link" id="nav-importa">Importa</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- TAB 1: STRADARIO (SEARCH & EDIT) -->
+        <div id="tab-stradario" class="tab-content">
+            <section class="search-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Cerca e Modifica Stradario</h2>
+                    <button class="btn-action btn-success" onclick="openCreateModal()">➕ Nuova Via</button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Ricerca le vie registrate nel database per modificarne il nome o assegnare le regole e zone di smistamento.</p>
+                
+                <div class="search-bar-row">
+                    <input type="text" id="admin-search-input" placeholder="Cerca via (es. Gramsci)..." autocomplete="off">
+                    <button class="btn-search" style="padding: 12px 20px;" onclick="performAdminSearch()">Cerca</button>
+                </div>
+            </section>
+
+            <div class="admin-table-container" id="search-results-container" style="display: none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Via / Piazza</th>
+                            <th>Località</th>
+                            <th>Regole Civici & Zone</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="search-results-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: ANOMALIE (UNMATCHED STREETS FROM EXCEL) -->
+        <div id="tab-anomalie" class="tab-content">
+            <section class="search-card" style="padding: 20px;">
+                <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Indirizzi Incongruenti</h2>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Queste vie erano presenti nell'Excel ma non sono state trovate nel database. Abbinale a una via esistente per correggerne il nome o creale da zero.</p>
+            </section>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Via Excel</th>
+                            <th>Località</th>
+                            <th>Nome Ricercato</th>
+                            <th>Zona Excel</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unmatched-list-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: IMPORTA CSV -->
+        <div id="tab-importa" class="tab-content">
+            <section class="admin-card">
+                <h2 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">Carica Database Smistamento</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Importa un file CSV per popolare o aggiornare l'elenco delle vie, civici e zone di consegna.</p>
+
+                <form id="upload-form">
+                    <div class="file-dropzone" id="dropzone">
+                        <span class="dropzone-icon">📤</span>
+                        <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 4px;">Trascina qui il file CSV o clicca per sfogliare</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Solo file .csv supportati</p>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                    </div>
+
+                    <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="clear-db" checked>
+                            <span>Svuota database esistente prima di importare i nuovi dati</span>
+                        </label>
+
+                        <button type="submit" class="btn-search" style="width: 100%;">Avvia Importazione</button>
+                    </div>
+                </form>
+
+                <div id="status-msg" class="status-message"></div>
+            </section>
+
+            <!-- Template Card -->
+            <section class="admin-card">
+                <h3 style="font-size: 1rem; font-weight: 700;">Formato CSV Richiesto</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Il file deve essere in formato CSV delimitato da virgola (,) o punto e virgola (;) ed includere le seguenti colonne in ordine:</p>
+                
+                <div class="template-box">via;localita;tipo_civico;da_civico;a_civico;zona_sigla;barcode
+VIA ROMA;MILANO;TUTTI;;;ZONA-A;
+VIA MILANO;MILANO;PARI;;;ZONA-B;
+VIA MILANO;MILANO;DISPARI;;;ZONA-C;
+CORSO VITTORIO EMANUELE;MILANO;INTERVALLO;1;50;ZONA-A;
+VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
+                
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* `tipo_civico` può assumere i valori: `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">* `barcode` è facoltativo e serve per abbinare un codice a barre direttamente a una zona.</p>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL PER EDIT/CREATION/RESOLUTION CON REGOLE MULTIPLE -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span id="modal-title">Modifica Via</span>
+                <button class="btn-action" style="padding: 2px 8px;" onclick="closeModal()">✕</button>
+            </div>
+            <form id="edit-form">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-resolve-id"> <!-- If resolving unmatched street -->
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="edit-via">Via / Piazza / Corso</label>
+                        <input type="text" id="edit-via" required style="width:100%; text-transform: uppercase;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label for="edit-localita">Località / Comune</label>
+                        <input type="text" id="edit-localita" required style="width:100%; text-transform: uppercase;">
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 8px 0;">
+                    
+                    <div class="form-group">
+                        <label style="margin-bottom: 6px; display: block;">Regole e Zone per Civico</label>
+                        <div id="modal-rules-container" style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Dynamic rows go here -->
+                        </div>
+                        <button type="button" class="btn-action btn-success" style="margin-top: 12px; width: 100%;" onclick="addModalRuleRow()">➕ Aggiungi Regola Civici / Zona</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" onclick="closeModal()">Annulla</button>
+                    <button type="submit" class="btn-search" style="padding: 10px 20px;">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        Poste &copy; 2026 | Area Sandbox Smistamento
+    </footer>
+
+    <script>
+        // Store current active group data for editing
+        let currentStreetGroup = null;
+
+        // Tab switching and hash routing
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('header nav a').forEach(el => el.classList.remove('active'));
+            
+            const activeContent = document.getElementById('tab-' + tabId);
+            const activeNav = document.getElementById('nav-' + tabId);
+            
+            if (activeContent) activeContent.classList.add('active');
+            if (activeNav) activeNav.classList.add('active');
+
+            if (tabId === 'anomalie') {
+                loadUnmatchedStreets();
+            }
+        }
+
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1) || 'stradario';
+            switchTab(hash);
+        });
+
+        // Initialize tabs
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1) || 'stradario';
+            switchTab(hash);
+        });
+
+        // Search in Database
+        function performAdminSearch() {
+            const query = document.getElementById('admin-search-input').value.trim();
+            const resultsContainer = document.getElementById('search-results-container');
+            const tbody = document.getElementById('search-results-body');
+            
+            if (query.length < 2) {
+                alert("Inserisci almeno 2 caratteri per la ricerca.");
+                return;
+            }
+
+            fetch(`/api/admin_search.php?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    if (data.success && data.results.length > 0) {
+                        // Group records by via + localita
+                        const grouped = {};
+                        data.results.forEach(row => {
+                            const key = `${row.via} | ${row.localita}`;
+                            if (!grouped[key]) {
+                                grouped[key] = {
+                                    via: row.via,
+                                    localita: row.localita,
+                                    rules: []
+                                };
+                            }
+                            grouped[key].rules.push(row);
+                        });
+
+                        Object.keys(grouped).forEach(key => {
+                            const group = grouped[key];
+                            const tr = document.createElement('tr');
+                            
+                            // Build rules column html
+                            let rulesHtml = '<div style="display:flex; flex-direction:column; gap:4px; font-size:0.8rem;">';
+                            group.rules.forEach(r => {
+                                let label = '';
+                                if (r.tipo_civico === 'TUTTI') label = 'Tutti i civici';
+                                else if (r.tipo_civico === 'PARI') label = 'Pari';
+                                else if (r.tipo_civico === 'DISPARI') label = 'Dispari';
+                                else if (r.tipo_civico === 'INTERVALLO') label = `Civici ${r.da_civico}-${r.a_civico}`;
+                                
+                                rulesHtml += `<div><strong>[${label}]</strong> → <span style="font-weight:800; color:var(--text-primary);">${r.zona_sigla}</span></div>`;
+                            });
+                            rulesHtml += '</div>';
+
+                            // Encode group data to pass to openEditModal
+                            const groupJson = JSON.stringify(group);
+
+                            tr.innerHTML = `
+                                <td style="font-weight: 700;">${group.via}</td>
+                                <td><span class="badge-loc">${group.localita}</span></td>
+                                <td>${rulesHtml}</td>
+                                <td>
+                                    <button class="btn-action" onclick="openEditModal(${escapeHtmlAttribute(groupJson)})">Modifica</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        resultsContainer.style.display = 'block';
+                    } else {
+                        resultsContainer.style.display = 'none';
+                        alert("Nessun record corrispondente trovato.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Errore durante la ricerca.");
+                });
+        }
+
+        // Unmatched/Anomalie loader
+        function loadUnmatchedStreets() {
+            const tbody = document.getElementById('unmatched-list-body');
+            fetch('/api/admin_unmatched.php')
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    if (data.success && data.results.length > 0) {
+                        data.results.forEach(row => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td style="font-weight: 700; color: var(--accent-danger);">${row.excel_via} <span style="font-weight: normal; font-size:0.75rem; color:var(--text-muted);">(${row.excel_tipo || 'GEN'})</span></td>
+                                <td><span class="badge-loc">${row.localita}</span></td>
+                                <td><code>${row.expected}</code></td>
+                                <td><span style="font-weight:800; color:var(--text-primary);">${row.zona}</span></td>
+                                <td style="display:flex; gap: 8px;">
+                                    <button class="btn-action btn-success" onclick="resolveUnmatched(${row.id}, '${escapeQuote(row.expected)}', '${escapeQuote(row.localita)}', '${escapeQuote(row.zona)}')">Crea / Associa</button>
+                                    <button class="btn-action btn-danger" onclick="deleteUnmatched(${row.id})">Ignora</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    } else {
+                        tr = document.createElement('tr');
+                        tr.innerHTML = `<td colspan="5" style="text-align:center; color:var(--text-muted);">Nessuna via incongruente registrata! Ottimo lavoro!</td>`;
+                        tbody.appendChild(tr);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        }
+
+        function deleteUnmatched(id) {
+            if (!confirm("Sei sicuro di voler ignorare ed eliminare questa anomalia?")) return;
+            const formData = new FormData();
+            formData.append('action', 'delete');
+            formData.append('id', id);
+
+            fetch('/api/admin_unmatched.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    loadUnmatchedStreets();
+                } else {
+                    alert(res.error);
+                }
+            });
+        }
+
+        // Modal Operations (Grouped View)
+        function openEditModal(group) {
+            document.getElementById('modal-title').innerText = "Modifica Via";
+            document.getElementById('edit-resolve-id').value = '';
+            document.getElementById('edit-via').value = group.via;
+            document.getElementById('edit-localita').value = group.localita;
+            
+            const container = document.getElementById('modal-rules-container');
+            container.innerHTML = '';
+            
+            group.rules.forEach(rule => {
+                addRuleRowToContainer(rule.id, rule.tipo_civico, rule.da_civico, rule.a_civico, rule.zona_sigla);
+            });
+            
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function openCreateModal() {
+            document.getElementById('modal-title').innerText = "Crea Nuova Via";
+            document.getElementById('edit-resolve-id').value = '';
+            document.getElementById('edit-via').value = '';
+            document.getElementById('edit-localita').value = 'CORTONA';
+            
+            const container = document.getElementById('modal-rules-container');
+            container.innerHTML = '';
+            // Pre-add a default row
+            addRuleRowToContainer(0, 'TUTTI', '', '', '');
+            
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function resolveUnmatched(resolveId, expected, localita, zona) {
+            document.getElementById('modal-title').innerText = "Risolvi Via Incongruente";
+            document.getElementById('edit-resolve-id').value = resolveId;
+            document.getElementById('edit-via').value = expected;
+            document.getElementById('edit-localita').value = localita;
+            
+            const container = document.getElementById('modal-rules-container');
+            container.innerHTML = '';
+            // Pre-add row matching the Excel zone
+            addRuleRowToContainer(0, 'TUTTI', '', '', zona);
+            
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        // Add Rule Row UI Logic
+        function addRuleRowToContainer(id, tipo_civico = 'TUTTI', da_civico = '', a_civico = '', zona_sigla = '') {
+            const container = document.getElementById('modal-rules-container');
+            const rowId = 'rule_' + Math.random().toString(36).substr(2, 9);
+            
+            const rowCard = document.createElement('div');
+            rowCard.className = 'rule-row-card';
+            rowCard.id = rowId;
+            rowCard.dataset.id = id;
+            
+            rowCard.innerHTML = `
+                <button type="button" class="btn-action btn-danger" style="position: absolute; top: 10px; right: 10px; padding: 2px 8px;" onclick="removeModalRuleRow('${rowId}')">✕</button>
+                
+                <div class="rule-row-cols">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size:0.65rem;">Regola Civici</label>
+                        <select class="rule-tipo" onchange="onRuleTipoChange('${rowId}')" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
+                            <option value="TUTTI" ${tipo_civico === 'TUTTI' ? 'selected' : ''}>Tutti i civici</option>
+                            <option value="PARI" ${tipo_civico === 'PARI' ? 'selected' : ''}>Pari</option>
+                            <option value="DISPARI" ${tipo_civico === 'DISPARI' ? 'selected' : ''}>Dispari</option>
+                            <option value="INTERVALLO" ${tipo_civico === 'INTERVALLO' ? 'selected' : ''}>Intervallo</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size:0.65rem;">Zona</label>
+                        <input type="text" class="rule-zona" value="${zona_sigla}" required style="width:100%; padding: 8px 10px; font-size:0.85rem; text-transform: uppercase;">
+                    </div>
+                </div>
+                
+                <div class="rule-range-fields" id="${rowId}_range" style="display: ${tipo_civico === 'INTERVALLO' ? 'grid' : 'none'};">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size:0.65rem;">Da Civico</label>
+                        <input type="number" class="rule-da" value="${da_civico}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size:0.65rem;">A Civico</label>
+                        <input type="number" class="rule-a" value="${a_civico}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
+                    </div>
+                </div>
+            `;
+            container.appendChild(rowCard);
+        }
+
+        function addModalRuleRow() {
+            addRuleRowToContainer(0, 'TUTTI', '', '', '');
+        }
+
+        function removeModalRuleRow(rowId) {
+            const card = document.getElementById(rowId);
+            if (card) {
+                // If it is an existing DB record, hide it and mark as deleted, don't just remove it from DOM
+                if (parseInt(card.dataset.id) > 0) {
+                    card.style.display = 'none';
+                    card.classList.add('deleted-rule');
+                } else {
+                    card.remove();
+                }
+            }
+        }
+
+        function onRuleTipoChange(rowId) {
+            const card = document.getElementById(rowId);
+            const tipo = card.querySelector('.rule-tipo').value;
+            const rangeDiv = document.getElementById(rowId + '_range');
+            const daInput = card.querySelector('.rule-da');
+            const aInput = card.querySelector('.rule-a');
+            
+            if (tipo === 'INTERVALLO') {
+                rangeDiv.style.display = 'grid';
+                daInput.required = true;
+                aInput.required = true;
+            } else {
+                rangeDiv.style.display = 'none';
+                daInput.required = false;
+                aInput.required = false;
+            }
+        }
+
+        // Handle Save
+        document.getElementById('edit-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Build the array of rules to submit
+            const rules = [];
+            const container = document.getElementById('modal-rules-container');
+            
+            // Existing rules marked for deletion
+            container.querySelectorAll('.deleted-rule').forEach(card => {
+                rules.push({
+                    id: parseInt(card.dataset.id),
+                    delete: true
+                });
+            });
+            
+            // Active rules (including new ones)
+            let hasError = false;
+            container.querySelectorAll('.rule-row-card:not(.deleted-rule)').forEach(card => {
+                const tipo = card.querySelector('.rule-tipo').value;
+                const zona = card.querySelector('.rule-zona').value.trim();
+                const da = card.querySelector('.rule-da').value;
+                const a = card.querySelector('.rule-a').value;
+                
+                if (!zona) {
+                    hasError = true;
+                    return;
+                }
+                
+                rules.push({
+                    id: parseInt(card.dataset.id),
+                    tipo_civico: tipo,
+                    da_civico: tipo === 'INTERVALLO' ? da : '',
+                    a_civico: tipo === 'INTERVALLO' ? a : '',
+                    zona_sigla: zona
+                });
+            });
+            
+            if (hasError) {
+                alert("Completa la sigla della zona per tutte le regole attive.");
+                return;
+            }
+
+            if (rules.length === 0) {
+                alert("È necessaria almeno una regola o sigla di zona attiva per salvare la via.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('resolve_id', document.getElementById('edit-resolve-id').value);
+            formData.append('via', document.getElementById('edit-via').value.trim());
+            formData.append('localita', document.getElementById('edit-localita').value.trim());
+            formData.append('rules', JSON.stringify(rules));
+
+            fetch('/api/admin_update_street.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    closeModal();
+                    alert(res.message);
+                    
+                    const activeHash = window.location.hash.substring(1) || 'stradario';
+                    if (activeHash === 'stradario') {
+                        performAdminSearch();
+                    } else if (activeHash === 'anomalie') {
+                        loadUnmatchedStreets();
+                    }
+                } else {
+                    alert(res.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Errore di connessione.");
+            });
+        });
+
+        // CSV Upload handlers
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('csv-file-input');
+        const uploadForm = document.getElementById('upload-form');
+        const statusMsg = document.getElementById('status-msg');
+        let selectedFile = null;
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                dropzone.querySelector('p').innerText = `Selezionato: ${selectedFile.name}`;
+            }
+        });
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                selectedFile = e.dataTransfer.files[0];
+                dropzone.querySelector('p').innerText = `Selezionato: ${selectedFile.name}`;
+            }
+        });
+
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!selectedFile) {
+                alert('Seleziona prima un file CSV.');
+                return;
+            }
+            statusMsg.className = 'status-message';
+            statusMsg.innerText = 'Importazione in corso...';
+            statusMsg.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('csv_file', selectedFile);
+            formData.append('clear', document.getElementById('clear-db').checked ? 'true' : 'false');
+
+            fetch('/api/import.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        statusMsg.className = 'status-message success';
+                        statusMsg.innerText = res.message;
+                    } else {
+                        statusMsg.className = 'status-message error';
+                        statusMsg.innerText = res.error;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusMsg.className = 'status-message error';
+                    statusMsg.innerText = 'Errore di connessione con il server.';
+                });
+        });
+
+        function escapeQuote(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function escapeHtmlAttribute(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;');
+        }
+    </script>
+</body>
+</html>

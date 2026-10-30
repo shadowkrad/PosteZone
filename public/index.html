@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PosteZone | Smistamento Zone & Civici (OCR)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css?v=5.0">
+    <!-- Libreria per la scansione dei codici a barre via fotocamera -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- Libreria Tesseract.js per il riconoscimento del testo (OCR) -->
+    <script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span class="logo-icon">📯</span>
+            PosteZone
+        </div>
+        <nav>
+            <a href="/index.html" class="nav-link active">Scanner</a>
+            <a href="/admin.html#stradario" class="nav-link">Stradario</a>
+            <a href="/admin.html#anomalie" class="nav-link">Anomalie</a>
+            <a href="/admin.html#importa" class="nav-link">Importa</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Scanner Card -->
+        <section class="scanner-card">
+            <div class="scanner-header">
+                <span class="scanner-title">
+                    <span id="status-pulse" class="scanner-pulse"></span>
+                    Lettore Fotocamera OCR Indirizzi
+                </span>
+            </div>
+            
+            <div style="position: relative;">
+                <div id="reader"></div>
+                <!-- Overlay per indicare l'area di puntamento -->
+                <div id="scan-overlay" class="scanner-overlay" style="display: none;"></div>
+                
+                <!-- Overlay di caricamento durante l'elaborazione OCR -->
+                <div id="ocr-loader" class="ocr-progress-overlay" style="display: none;">
+                    <div class="ocr-spinner"></div>
+                    <div id="ocr-status-text">Lettura dell'indirizzo in corso...</div>
+                </div>
+            </div>
+            
+            <div class="scanner-controls">
+                <button id="btn-start-scan" class="btn-ctrl active">
+                    📷 Attiva Fotocamera
+                </button>
+                <button id="btn-read-text" class="btn-ctrl" style="display: none; background: var(--accent-yellow); color: var(--text-primary); border-color: var(--text-primary);">
+                    🔎 Leggi Indirizzo (OCR)
+                </button>
+                <button id="btn-stop-scan" class="btn-ctrl" style="display: none;">
+                    🛑 Disattiva Fotocamera
+                </button>
+            </div>
+        </section>
+
+        <!-- Search Card -->
+        <section class="search-card">
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary);">Ricerca Manuale Indirizzo</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Seleziona la via e specifica il civico per trovare la zona di competenza.</p>
+            
+            <form id="search-form">
+                <div class="form-group">
+                    <label for="search-via">Via / Piazza / Corso</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="search-via" placeholder="es. Via Roma" autocomplete="off" required>
+                        <div id="autocomplete-results" class="autocomplete-items"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search-civico">Numero Civico</label>
+                        <input type="number" id="search-civico" placeholder="es. 12" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-btn-label">&nbsp;</label>
+                        <button type="submit" class="btn-search">Cerca</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Result Card -->
+        <section id="result-card" class="result-card">
+            <span class="match-info-badge">Zona di Smistamento</span>
+            <div id="zone-display" class="zone-display">Z-01</div>
+            
+            <!-- Form di assegnazione rapida zona (mostrato se zona è DA ASSEGNARE) -->
+            <div id="assign-zone-container" style="display: none; width: 100%; margin-top: 10px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+                <p style="font-size: 0.85rem; font-weight: 700; color: var(--accent-danger); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">⚠️ Zona da assegnare. Specifica la sigla:</p>
+                <form id="assign-zone-form" style="display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 320px; margin: 0 auto;">
+                    <input type="hidden" id="assign-id">
+                    <input type="text" id="assign-input" placeholder="es. Z-03" style="padding: 8px 12px; font-size: 0.9rem; flex: 1; text-transform: uppercase;" required>
+                    <button type="submit" class="btn-search" style="padding: 8px 16px; font-size: 0.9rem;">Salva</button>
+                </form>
+            </div>
+
+            <div class="match-details">
+                <div id="match-via" class="match-via">VIA ROMA, MILANO</div>
+                <div id="match-civico-type" class="match-civico-type">Tutti i civici</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Poste Italiane &copy; 2026 | Area Sandbox Smistamento
+    </footer>
+
+    <script src="/js/app.js?v=4.0"></script>
+</body>
+</html>
