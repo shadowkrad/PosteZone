@@ -34,6 +34,11 @@ printf '%s:%s\n' "$ADMIN_USER" "$(openssl passwd -apr1 "$ADMIN_PASSWORD")" > /et
 chmod 640 /etc/nginx/.htpasswd
 chown root:nginx /etc/nginx/.htpasswd 2>/dev/null || true
 
+# Backup giornaliero del database (03:30), conservati in /data/backups
+BACKUP_KEEP="${BACKUP_KEEP:-14}"
+echo "30 3 * * * DB_PATH=/data/postezone.db BACKUP_KEEP=$BACKUP_KEEP /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
+crond -b -l 8
+
 echo "[PosteZone] Starting PHP-FPM and Nginx..."
 php-fpm83 -D
 exec nginx -g "daemon off;"

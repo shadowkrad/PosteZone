@@ -82,6 +82,63 @@ function onScanFailure(error) {
     // Fallimenti di scansione barcode normali
 }
 
+// Il motore OCR (WASM + dati lingua) viene caricato una volta sola e riutilizzato: dalla seconda lettura è molto più rapido.
+// Tutti i file sono serviti da /vendor/tesseract, quindi funziona anche senza accesso a internet.
+let ocrWorkerPromise = null;
+let ocrProgressHandler = null;
+
+function getOcrWorker() {
+    if (!ocrWorkerPromise) {
+        ocrWorkerPromise = Tesseract.createWorker('ita', 1, {
+            workerPath: '/vendor/tesseract/worker.min.js',
+            corePath: '/vendor/tesseract',
+            langPath: '/vendor/tesseract',
+            logger: m => { if (ocrProgressHandler) ocrProgressHandler(m); }
+        }).catch(err => {
+            ocrWorkerPromise = null; // permette di riprovare alla lettura successiva
+            throw err;
+        });
+    }
+    return ocrWorkerPromise;
+}
+
+// Ridimensiona il frame (max 1800px di larghezza), lo converte in grigi e stira il contrasto
+function preprocessFrame(video) {
+    const maxWidth = 1800;
+    const scale = Math.min(1, maxWidth / video.videoWidth);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const px = img.data;
+    const hist = new Uint32Array(256);
+    for (let i = 0; i < px.length; i += 4) {
+        const g = (px[i] * 299 + px[i + 1] * 587 + px[i + 2] * 114) / 1000 | 0;
+        px[i] = px[i + 1] = px[i + 2] = g;
+        hist[g]++;
+    }
+
+    // Estremi al 1% e 99% dell'istogramma, per ignorare i pixel anomali
+    const total = canvas.width * canvas.height;
+    let low = 0, high = 255, acc = 0;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= total * 0.01) { low = v; break; } }
+    acc = 0;
+    for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc >= total * 0.01) { high = v; break; } }
+
+    if (high - low > 20) {
+        const range = high - low;
+        for (let i = 0; i < px.length; i += 4) {
+            const v = Math.max(0, Math.min(255, (px[i] - low) * 255 / range)) | 0;
+            px[i] = px[i + 1] = px[i + 2] = v;
+        }
+    }
+    ctx.putImageData(img, 0, 0);
+    return canvas;
+}
+
 function captureAndOCR() {
     const video = document.querySelector("#reader video");
     if (!video) {
@@ -96,29 +153,18 @@ function captureAndOCR() {
     statusText.innerText = 'Cattura immagine...';
 
     try {
-        // Cattura il frame dal flusso video (invia l'intera immagine per massima affidabilità di lettura)
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const dataUrl = canvas.toDataURL("image/png");
+        // Cattura il frame dal flusso video e lo prepara per la lettura (scala di grigi + contrasto)
+        const canvas = preprocessFrame(video);
 
         statusText.innerText = 'Caricamento motore OCR...';
 
-        // Esegui riconoscimento testo tramite Tesseract.js (usando 'eng' per caricamento rapido ed affidabile)
-        Tesseract.recognize(
-            dataUrl,
-            'eng',
-            {
-                logger: m => {
-                    if (m.status === 'recognizing text') {
-                        statusText.innerText = `Lettura testo: ${Math.round(m.progress * 100)}%`;
-                    }
-                }
+        // Riconoscimento testo con Tesseract.js in italiano (accenti e apostrofi di vie e località)
+        ocrProgressHandler = m => {
+            if (m.status === 'recognizing text') {
+                statusText.innerText = `Lettura testo: ${Math.round(m.progress * 100)}%`;
             }
-        ).then(({ data: { text } }) => {
+        };
+        getOcrWorker().then(worker => worker.recognize(canvas)).then(({ data: { text } }) => {
             console.log("Testo estratto OCR: ", text);
             if (!text || text.trim() === "") {
                 loader.style.display = 'none';

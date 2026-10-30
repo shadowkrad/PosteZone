@@ -23,3 +23,4 @@ data/*.db-shm
 
 # Segreti locali
 .env
+data/backups/

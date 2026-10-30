@@ -90,3 +90,14 @@ il container ne genera una temporanea e la stampa nei log (`docker compose logs 
 
 Il log OCR di debug è disattivato; con `OCR_DEBUG_LOG=1` scrive in `data/ocr_debug.log` (contiene indirizzi dei destinatari).
 Lo script `scripts/import_excel_zones.php` non è più esposto sul web: si esegue solo da riga di comando.
+
+## 💾 Backup
+
+Ogni notte alle 03:30 il container salva una copia compressa del database in `data/backups/` (ultimi `BACKUP_KEEP`, default 14).
+Backup immediato: `docker compose exec postezone backup.sh`.
+Ripristino: ferma il container, decomprimi il file scelto (`gunzip -k`) e copialo come `data/postezone.db`, poi riavvia.
+Copia ogni tanto `data/backups/` anche fuori dal server.
+
+## 📦 Funzionamento offline
+
+Tesseract (OCR in italiano), il lettore di codici e i font sono in `public/vendor/`: l'app non dipende da internet dopo l'installazione.

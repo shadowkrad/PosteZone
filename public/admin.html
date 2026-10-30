@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PosteZone | Gestione Stradario & Zone</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=5.0">
+    <link rel="stylesheet" href="/css/style.css?v=6.0">
     <style>
         .template-box {
             background: rgba(0, 75, 147, 0.03);
@@ -423,8 +420,8 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                                 else if (r.tipo_civico === 'PARI') label = 'Pari';
                                 else if (r.tipo_civico === 'DISPARI') label = 'Dispari';
                                 else if (r.tipo_civico === 'INTERVALLO') label = `Civici ${r.da_civico}-${r.a_civico}`;
-                                
-                                rulesHtml += `<div><strong>[${label}]</strong> → <span style="font-weight:800; color:var(--text-primary);">${r.zona_sigla}</span></div>`;
+
+                                rulesHtml += `<div><strong>[${escapeHtml(label)}]</strong> → <span style="font-weight:800; color:var(--text-primary);">${escapeHtml(r.zona_sigla)}</span></div>`;
                             });
                             rulesHtml += '</div>';
 
@@ -432,8 +429,8 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                             const groupJson = JSON.stringify(group);
 
                             tr.innerHTML = `
-                                <td style="font-weight: 700;">${group.via}</td>
-                                <td><span class="badge-loc">${group.localita}</span></td>
+                                <td style="font-weight: 700;">${escapeHtml(group.via)}</td>
+                                <td><span class="badge-loc">${escapeHtml(group.localita)}</span></td>
                                 <td>${rulesHtml}</td>
                                 <td>
                                     <button class="btn-action" onclick="openEditModal(${escapeHtmlAttribute(groupJson)})">Modifica</button>
@@ -464,10 +461,10 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                         data.results.forEach(row => {
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                                <td style="font-weight: 700; color: var(--accent-danger);">${row.excel_via} <span style="font-weight: normal; font-size:0.75rem; color:var(--text-muted);">(${row.excel_tipo || 'GEN'})</span></td>
-                                <td><span class="badge-loc">${row.localita}</span></td>
-                                <td><code>${row.expected}</code></td>
-                                <td><span style="font-weight:800; color:var(--text-primary);">${row.zona}</span></td>
+                                <td style="font-weight: 700; color: var(--accent-danger);">${escapeHtml(row.excel_via)} <span style="font-weight: normal; font-size:0.75rem; color:var(--text-muted);">(${escapeHtml(row.excel_tipo || 'GEN')})</span></td>
+                                <td><span class="badge-loc">${escapeHtml(row.localita)}</span></td>
+                                <td><code>${escapeHtml(row.expected)}</code></td>
+                                <td><span style="font-weight:800; color:var(--text-primary);">${escapeHtml(row.zona)}</span></td>
                                 <td style="display:flex; gap: 8px;">
                                     <button class="btn-action btn-success" onclick="resolveUnmatched(${row.id}, '${escapeQuote(row.expected)}', '${escapeQuote(row.localita)}', '${escapeQuote(row.zona)}')">Crea / Associa</button>
                                     <button class="btn-action btn-danger" onclick="deleteUnmatched(${row.id})">Ignora</button>
@@ -580,18 +577,18 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size:0.65rem;">Zona</label>
-                        <input type="text" class="rule-zona" value="${zona_sigla}" required style="width:100%; padding: 8px 10px; font-size:0.85rem; text-transform: uppercase;">
+                        <input type="text" class="rule-zona" value="${escapeHtml(zona_sigla)}" required style="width:100%; padding: 8px 10px; font-size:0.85rem; text-transform: uppercase;">
                     </div>
                 </div>
                 
                 <div class="rule-range-fields" id="${rowId}_range" style="display: ${tipo_civico === 'INTERVALLO' ? 'grid' : 'none'};">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size:0.65rem;">Da Civico</label>
-                        <input type="number" class="rule-da" value="${da_civico}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
+                        <input type="number" class="rule-da" value="${escapeHtml(da_civico)}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label style="font-size:0.65rem;">A Civico</label>
-                        <input type="number" class="rule-a" value="${a_civico}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
+                        <input type="number" class="rule-a" value="${escapeHtml(a_civico)}" min="1" style="width:100%; padding: 8px 10px; font-size:0.85rem;">
                     </div>
                 </div>
             `;
@@ -770,12 +767,19 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                 });
         });
 
+        // Testo da dati del database/CSV inserito in innerHTML: sempre da escapare
+        function escapeHtml(value) {
+            return escapeHtmlAttribute(value === null || value === undefined ? '' : String(value));
+        }
+
+        // Stringa per un parametro JS dentro un attributo onclick: escape JS e poi HTML
         function escapeQuote(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const js = String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+            return escapeHtmlAttribute(js);
         }
 
         function escapeHtmlAttribute(str) {
-            return str.replace(/&/g, '&amp;')
+            return String(str).replace(/&/g, '&amp;')
                       .replace(/"/g, '&quot;')
                       .replace(/'/g, '&#039;')
                       .replace(/</g, '&lt;')

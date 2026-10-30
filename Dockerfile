@@ -52,7 +52,8 @@ COPY . /var/www/html/
 
 # Copy and setup entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/backup.sh /usr/local/bin/backup.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/backup.sh
 
 # Environment defaults
 ENV DB_PATH=/data/postezone.db

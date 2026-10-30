@@ -1,0 +1,10 @@
+.git
+.env
+.gitattributes
+*.xlsx
+*.log
+data/*.db-wal
+data/*.db-shm
+data/backups
+scripts/extracted_xlsx
+README.md
