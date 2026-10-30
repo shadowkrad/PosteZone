@@ -5,20 +5,22 @@ $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $localita = isset($_GET['localita']) ? trim($_GET['localita']) : '';
 
 try {
-    $sql = "SELECT * FROM smistamento_vie WHERE 1=1";
+    $sql = "SELECT s.*, (SELECT group_concat(v.motivo, char(10)) FROM verifiche v
+                         WHERE v.via = s.via AND v.localita = s.localita AND v.stato = 'APERTA') AS verifiche
+            FROM smistamento_vie s WHERE 1=1";
     $params = [];
 
     if (!empty($q)) {
-        $sql .= " AND via LIKE :q";
+        $sql .= " AND s.via LIKE :q";
         $params['q'] = "%" . strtoupper($q) . "%";
     }
 
     if (!empty($localita)) {
-        $sql .= " AND localita = :localita";
+        $sql .= " AND s.localita = :localita";
         $params['localita'] = strtoupper($localita);
     }
 
-    $sql .= " ORDER BY localita, via LIMIT 50";
+    $sql .= " ORDER BY s.localita, s.via LIMIT 50";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

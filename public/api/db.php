@@ -53,6 +53,19 @@ try {
             zona TEXT NOT NULL,
             localita TEXT NOT NULL
         );
+
+        -- Segnalazioni da far verificare a un operatore (conflitti nei dati, nomi simili, segnalazioni manuali)
+        CREATE TABLE IF NOT EXISTS verifiche (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            via TEXT NOT NULL,
+            localita TEXT NOT NULL,
+            motivo TEXT NOT NULL,
+            stato TEXT NOT NULL DEFAULT 'APERTA',
+            creata_il TEXT DEFAULT CURRENT_TIMESTAMP,
+            verificata_il TEXT DEFAULT NULL,
+            UNIQUE (via, localita, motivo)
+        );
+        CREATE INDEX IF NOT EXISTS idx_verifiche_via ON verifiche(via, localita);
     ");
 } catch (\PDOException $e) {
     echo json_encode([
@@ -85,6 +98,14 @@ function pickRule(array $rows, ?int $civico): ?array
         }
     }
     return $generic;
+}
+
+/** Motivi delle segnalazioni ancora aperte per una via. */
+function openFlags(PDO $pdo, string $via, string $localita): array
+{
+    $stmt = $pdo->prepare("SELECT motivo FROM verifiche WHERE via = :via AND localita = :localita AND stato = 'APERTA' ORDER BY id");
+    $stmt->execute(['via' => $via, 'localita' => $localita]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
 /** Coppie distinte via/localita presenti in un insieme di regole. */

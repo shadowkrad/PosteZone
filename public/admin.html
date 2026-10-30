@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PosteZone | Gestione Stradario & Zone</title>
-    <link rel="stylesheet" href="/css/style.css?v=6.0">
+    <meta name="theme-color" content="#ffc20e">
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/css/style.css?v=7.0">
     <style>
         .template-box {
             background: rgba(0, 75, 147, 0.03);
@@ -32,7 +34,7 @@
             overflow-x: auto;
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            background: white;
+            background: var(--card-bg);
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
         .admin-table {
@@ -47,7 +49,7 @@
             white-space: nowrap;
         }
         .admin-table th {
-            background: #f8fafc;
+            background: var(--surface-2);
             color: var(--text-primary);
             font-weight: 700;
         }
@@ -62,12 +64,12 @@
             border: 1px solid var(--card-border);
             cursor: pointer;
             transition: all 0.2s ease;
-            background: white;
+            background: var(--card-bg);
             color: var(--text-primary);
         }
         .btn-action:hover {
-            border-color: var(--text-primary);
-            background: var(--text-primary);
+            border-color: var(--poste-blue);
+            background: var(--poste-blue);
             color: white;
         }
         .btn-action.btn-danger {
@@ -112,7 +114,7 @@
             display: flex;
         }
         .modal-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
             width: 100%;
             max-width: 500px;
@@ -129,7 +131,7 @@
         }
         .modal-header {
             padding: 16px 20px;
-            background: #f8fafc;
+            background: var(--surface-2);
             border-bottom: 1px solid var(--card-border);
             font-weight: 700;
             color: var(--text-primary);
@@ -152,14 +154,14 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            background: #f8fafc;
+            background: var(--surface-2);
             flex-shrink: 0;
         }
         .badge-loc {
             font-size: 0.7rem;
             font-weight: 700;
             padding: 2px 6px;
-            background: #e2e8f0;
+            background: var(--border-2);
             border-radius: 4px;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -168,7 +170,7 @@
             border: 1px solid var(--card-border);
             padding: 12px;
             border-radius: 10px;
-            background: #f8fafc;
+            background: var(--surface-2);
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -198,6 +200,7 @@
             <a href="/index.html" class="nav-link">Scanner</a>
             <a href="#stradario" class="nav-link" id="nav-stradario">Stradario</a>
             <a href="#anomalie" class="nav-link" id="nav-anomalie">Anomalie</a>
+            <a href="#verifiche" class="nav-link" id="nav-verifiche">Verifiche<span id="verifiche-badge" class="nav-badge" style="display: none;">0</span></a>
             <a href="#importa" class="nav-link" id="nav-importa">Importa</a>
         </nav>
     </header>
@@ -260,6 +263,38 @@
             </div>
         </div>
 
+
+        <!-- TAB: VERIFICHE (SEGNALAZIONI DA CONTROLLARE) -->
+        <div id="tab-verifiche" class="tab-content">
+            <section class="search-card" style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);"><span class="flag-mark" style="margin: 0 8px 0 0; cursor: default;">!</span>Dati da verificare</h2>
+                    <select id="verifiche-filter" onchange="loadVerifiche()" style="padding: 8px 12px; font-size: 0.85rem;">
+                        <option value="APERTA">Da verificare</option>
+                        <option value="VERIFICATA">Già verificate</option>
+                        <option value="TUTTE">Tutte</option>
+                    </select>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Conflitti nei dati, nomi di via simili, intervalli sovrapposti e problemi segnalati dagli operatori. Usa «Correggi» per aprire la via, poi salva con «Segna come verificata».</p>
+            </section>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Problema</th>
+                            <th>Via</th>
+                            <th>Località</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="verifiche-list-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- TAB 3: IMPORTA CSV -->
         <div id="tab-importa" class="tab-content">
             <section class="admin-card">
@@ -306,6 +341,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                 
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* `tipo_civico` può assumere i valori: `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`, `PARI_INTERVALLO`, `DISPARI_INTERVALLO` (gli ultimi due limitano l'intervallo ai soli civici pari o dispari). Prima di ogni importazione viene salvata una copia di sicurezza del database.</p>
                 <p style="font-size: 0.75rem; color: var(--text-muted);">* `barcode` è facoltativo e serve per abbinare un codice a barre direttamente a una zona.</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">* Un file con intestazione `via;localita;motivo` carica invece le segnalazioni «Dati da verificare» (punto esclamativo rosso): quelle già presenti o già verificate non vengono riaperte.</p>
             </section>
         </div>
     </main>
@@ -320,6 +356,21 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             <form id="edit-form">
                 <div class="modal-body">
                     <input type="hidden" id="edit-resolve-id"> <!-- If resolving unmatched street -->
+                    <input type="hidden" id="edit-orig-via">
+                    <input type="hidden" id="edit-orig-localita">
+
+                    <div id="edit-flags" class="verify-alert">
+                        <span class="flag-mark" aria-hidden="true">!</span>
+                        <div style="flex: 1;">
+                            <div class="verify-alert-title">Da verificare</div>
+                            <ul id="edit-flags-list"></ul>
+                            <label class="checkbox-label" style="margin-top: 8px; text-transform: none; letter-spacing: 0;">
+                                <input type="checkbox" id="edit-resolve-flags" checked>
+                                <span>Segna come verificata al salvataggio</span>
+                            </label>
+                        </div>
+                    </div>
+
 
                     <div class="form-group" style="margin-bottom: 0;">
                         <label for="edit-via">Via / Piazza / Corso</label>
@@ -370,6 +421,9 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             if (tabId === 'anomalie') {
                 loadUnmatchedStreets();
             }
+            if (tabId === 'verifiche') {
+                loadVerifiche();
+            }
         }
 
         window.addEventListener('hashchange', () => {
@@ -381,6 +435,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
         document.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash.substring(1) || 'stradario';
             switchTab(hash);
+            loadVerificheBadge();
         });
 
         // Search in Database
@@ -407,6 +462,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                                 grouped[key] = {
                                     via: row.via,
                                     localita: row.localita,
+                                    verifiche: row.verifiche || '',
                                     rules: []
                                 };
                             }
@@ -436,7 +492,7 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                             const groupJson = JSON.stringify(group);
 
                             tr.innerHTML = `
-                                <td style="font-weight: 700;">${escapeHtml(group.via)}</td>
+                                <td style="font-weight: 700;">${escapeHtml(group.via)}${group.verifiche ? `<span class="flag-mark" title="${escapeHtmlAttribute(group.verifiche)}">!</span>` : ''}</td>
                                 <td><span class="badge-loc">${escapeHtml(group.localita)}</span></td>
                                 <td>${rulesHtml}</td>
                                 <td>
@@ -516,6 +572,9 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             document.getElementById('edit-resolve-id').value = '';
             document.getElementById('edit-via').value = group.via;
             document.getElementById('edit-localita').value = group.localita;
+            document.getElementById('edit-orig-via').value = group.via;
+            document.getElementById('edit-orig-localita').value = group.localita;
+            renderModalFlags(group.verifiche ? group.verifiche.split(String.fromCharCode(10)) : []);
             
             const container = document.getElementById('modal-rules-container');
             container.innerHTML = '';
@@ -532,6 +591,9 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             document.getElementById('edit-resolve-id').value = '';
             document.getElementById('edit-via').value = '';
             document.getElementById('edit-localita').value = 'CORTONA';
+            document.getElementById('edit-orig-via').value = '';
+            document.getElementById('edit-orig-localita').value = '';
+            renderModalFlags([]);
             
             const container = document.getElementById('modal-rules-container');
             container.innerHTML = '';
@@ -546,6 +608,9 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             document.getElementById('edit-resolve-id').value = resolveId;
             document.getElementById('edit-via').value = expected;
             document.getElementById('edit-localita').value = localita;
+            document.getElementById('edit-orig-via').value = '';
+            document.getElementById('edit-orig-localita').value = '';
+            renderModalFlags([]);
             
             const container = document.getElementById('modal-rules-container');
             container.innerHTML = '';
@@ -626,6 +691,101 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             return typeof tipo === 'string' && tipo.endsWith('INTERVALLO');
         }
 
+
+        // ---- Segnalazioni "da verificare" ----
+        function refreshVerificheBadge(count) {
+            const badge = document.getElementById('verifiche-badge');
+            if (!badge) return;
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+
+        function loadVerificheBadge() {
+            fetch('/api/admin_verifiche.php?stato=NESSUNA')
+                .then(res => res.json())
+                .then(data => { if (data.success) refreshVerificheBadge(data.aperte); })
+                .catch(() => {});
+        }
+
+        function loadVerifiche() {
+            const stato = document.getElementById('verifiche-filter').value;
+            const tbody = document.getElementById('verifiche-list-body');
+
+            fetch('/api/admin_verifiche.php?stato=' + encodeURIComponent(stato))
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    if (!data.success) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--accent-danger);">' + escapeHtml(data.error) + '</td></tr>';
+                        return;
+                    }
+                    refreshVerificheBadge(data.aperte);
+
+                    if (data.results.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nessuna segnalazione. Ottimo lavoro!</td></tr>';
+                        return;
+                    }
+
+                    data.results.forEach(row => {
+                        const open = row.stato === 'APERTA';
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="max-width: 320px; white-space: normal;">
+                                <span class="flag-mark" style="margin: 0 6px 0 0; ${open ? '' : 'background: var(--accent-success);'}">${open ? '!' : '✓'}</span>${escapeHtml(row.motivo)}
+                            </td>
+                            <td style="font-weight: 700;">${escapeHtml(row.via)}</td>
+                            <td><span class="badge-loc">${escapeHtml(row.localita)}</span></td>
+                            <td style="display:flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-action" onclick="fixStreet('${escapeQuote(row.via)}', '${escapeQuote(row.localita)}')">Correggi</button>
+                                ${open
+                                    ? `<button class="btn-action btn-success" onclick="changeFlag(${row.id}, 'resolve')">Verificata</button>`
+                                    : `<button class="btn-action" onclick="changeFlag(${row.id}, 'reopen')">Riapri</button>`}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+
+        function changeFlag(id, action) {
+            const formData = new FormData();
+            formData.append('action', action);
+            formData.append('id', id);
+            fetch('/api/admin_verifiche.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) { loadVerifiche(); } else { alert(res.error); }
+                });
+        }
+
+        // Apre la via della segnalazione nel form di modifica
+        function fixStreet(via, localita) {
+            fetch('/api/admin_search.php?q=' + encodeURIComponent(via) + '&localita=' + encodeURIComponent(localita))
+                .then(res => res.json())
+                .then(data => {
+                    const rules = (data.results || []).filter(r => r.via === via && r.localita === localita);
+                    if (rules.length === 0) {
+                        alert('Via non trovata nello stradario (forse è stata rinominata o eliminata). Se è già a posto, segna la segnalazione come verificata.');
+                        return;
+                    }
+                    openEditModal({ via: via, localita: localita, rules: rules, verifiche: rules[0].verifiche || '' });
+                });
+        }
+
+        function renderModalFlags(flags) {
+            const box = document.getElementById('edit-flags');
+            const list = document.getElementById('edit-flags-list');
+            list.innerHTML = '';
+            flags.forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                list.appendChild(li);
+            });
+            box.classList.toggle('visible', flags.length > 0);
+            document.getElementById('edit-resolve-flags').checked = true;
+        }
+
         function onRuleTipoChange(rowId) {
             const card = document.getElementById(rowId);
             const tipo = card.querySelector('.rule-tipo').value;
@@ -697,6 +857,10 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
             formData.append('via', document.getElementById('edit-via').value.trim());
             formData.append('localita', document.getElementById('edit-localita').value.trim());
             formData.append('rules', JSON.stringify(rules));
+            formData.append('orig_via', document.getElementById('edit-orig-via').value);
+            formData.append('orig_localita', document.getElementById('edit-orig-localita').value);
+            const flagsVisible = document.getElementById('edit-flags').classList.contains('visible');
+            formData.append('resolve_flags', flagsVisible && document.getElementById('edit-resolve-flags').checked ? '1' : '0');
 
             fetch('/api/admin_update_street.php', {
                 method: 'POST',
@@ -713,7 +877,10 @@ VIA LEOPARDI;MILANO;TUTTI;;;ZONA-D;800123456789</div>
                         performAdminSearch();
                     } else if (activeHash === 'anomalie') {
                         loadUnmatchedStreets();
+                    } else if (activeHash === 'verifiche') {
+                        loadVerifiche();
                     }
+                    loadVerificheBadge();
                 } else {
                     alert(res.error);
                 }

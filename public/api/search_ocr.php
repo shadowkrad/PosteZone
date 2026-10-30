@@ -83,6 +83,7 @@ if ($matchedRow) {
     if ($civicoInt !== null) {
         $matchedRow['parsed_civico'] = $civicoInt;
     }
+    $matchedRow['verifiche'] = openFlags($pdo, $matchedRow['via'], $matchedRow['localita']);
     ocrLog('MATCH RESULT: ' . $matchedRow['via'] . ' (' . $matchedRow['localita'] . ') -> ' . $matchedRow['zona_sigla']);
     echo json_encode([
         'success' => true,

@@ -239,6 +239,45 @@ function lookupData(queryString) {
         });
 }
 
+// Via del risultato mostrato: serve per segnalare un problema
+let currentResult = null;
+
+// Punto esclamativo rosso con i motivi, se la via ha segnalazioni aperte
+function showFlags(data) {
+    const alertBox = document.getElementById('verify-alert');
+    const list = document.getElementById('verify-list');
+    const reportBtn = document.getElementById('btn-report');
+    list.innerHTML = '';
+
+    const flags = (data && data.verifiche) || [];
+    flags.forEach(text => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        list.appendChild(li);
+    });
+    alertBox.classList.toggle('visible', flags.length > 0);
+
+    currentResult = data ? { via: data.via, localita: data.localita } : null;
+    reportBtn.style.display = currentResult ? 'inline-block' : 'none';
+}
+
+function reportProblem() {
+    if (!currentResult) return;
+    const motivo = prompt(`Descrivi il problema su "${currentResult.via}, ${currentResult.localita}" (es. zona errata, civico mancante):`);
+    if (!motivo || !motivo.trim()) return;
+
+    const formData = new FormData();
+    formData.append('action', 'add');
+    formData.append('via', currentResult.via);
+    formData.append('localita', currentResult.localita);
+    formData.append('motivo', motivo.trim());
+
+    fetch('/api/admin_verifiche.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(res => alert(res.success ? res.message : (res.error || 'Segnalazione non registrata.')))
+        .catch(() => alert('Errore di connessione: segnalazione non registrata.'));
+}
+
 function clearAmbiguousOptions() {
     const old = document.getElementById('ambiguous-options');
     if (old) old.remove();
@@ -271,6 +310,7 @@ function displayAmbiguous(options, civico, message) {
 
 function displayResult(data, parsedCivico = null) {
     clearAmbiguousOptions();
+    showFlags(data);
     const resultCard = document.getElementById('result-card');
     const zoneDisplay = document.getElementById('zone-display');
     const matchVia = document.getElementById('match-via');
@@ -325,6 +365,7 @@ function displayResult(data, parsedCivico = null) {
 
 function displayNoMatch(message) {
     clearAmbiguousOptions();
+    showFlags(null);
     const resultCard = document.getElementById('result-card');
     const zoneDisplay = document.getElementById('zone-display');
     const matchVia = document.getElementById('match-via');
@@ -342,6 +383,7 @@ function displayNoMatch(message) {
 // Inizializza al caricamento del DOM
 document.addEventListener('DOMContentLoaded', () => {
     initScanner();
+    document.getElementById('btn-report').addEventListener('click', reportProblem);
     
     const viaInput = document.getElementById('search-via');
     const resultsDiv = document.getElementById('autocomplete-results');

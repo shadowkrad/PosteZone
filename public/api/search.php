@@ -18,6 +18,7 @@ if ($q !== '') {
     $result = $stmt->fetch();
 
     if ($result) {
+        $result['verifiche'] = openFlags($pdo, $result['via'], $result['localita']);
         echo json_encode([
             'success' => true,
             'match' => true,
@@ -72,6 +73,7 @@ $civicoInt = $civico !== '' ? intval($civico) : null;
 $matchedRow = pickRule($rows, $civicoInt);
 
 if ($matchedRow) {
+    $matchedRow['verifiche'] = openFlags($pdo, $matchedRow['via'], $matchedRow['localita']);
     echo json_encode([
         'success' => true,
         'match' => true,

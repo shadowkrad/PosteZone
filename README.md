@@ -107,4 +107,15 @@ Tesseract (OCR in italiano), il lettore di codici e i font sono in `public/vendo
 1. `python scripts/build_ripartizione_csv.py "RipartizioneUfficio*.xlsx"` crea `import/ripartizione.csv` e `import/ripartizione_report.txt` (da leggere: vie nuove, conflitti, range non riconosciuti).
 2. In `admin.html` > Importa carica il CSV con l'opzione **Sostituisci le regole delle vie presenti nel file** (le altre vie restano invariate). Prima dell'importazione viene salvata una copia in `data/backups/pre-import-*.db`.
 
+3. Carica poi anche `import/ripartizione_verifiche.csv` (intestazione `via;localita;motivo`): crea le segnalazioni con il punto esclamativo rosso.
+
+## ❗ Dati da verificare
+
+Conflitti nei dati, intervalli sovrapposti, nomi di via simili e zone sostituite compaiono con un **punto esclamativo rosso** sul risultato della ricerca e nel pannello admin (tab *Verifiche*, con contatore nel menu).
+Un responsabile apre la via con *Correggi*, sistema le regole e salva con *Segna come verificata*. Gli operatori possono anche segnalare un problema direttamente dal risultato (*Segnala un problema con questa zona*).
+
+## 🌙 Tema scuro
+
+L'interruttore ☀️/🌙 in alto a destra cambia tema; di default segue l'impostazione del dispositivo e la scelta viene ricordata.
+
 Le regole per civico supportate sono `TUTTI`, `PARI`, `DISPARI`, `INTERVALLO`, `PARI_INTERVALLO` e `DISPARI_INTERVALLO`.

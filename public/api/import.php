@@ -43,6 +43,41 @@ if ($header) {
     }
 }
 
+// File di segnalazioni (intestazione via;localita;motivo): inserisce le voci da far verificare agli operatori
+if ($hasHeader && in_array('motivo', $headerLower)) {
+    try {
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare("INSERT INTO verifiche (via, localita, motivo) VALUES (:via, :localita, :motivo)
+            ON CONFLICT(via, localita, motivo) DO NOTHING");
+        $added = 0;
+        $total = 0;
+        while (($row = fgetcsv($file, 0, $delimiter)) !== FALSE) {
+            if (count($row) < 3 || trim($row[0]) === '' || trim($row[2]) === '') {
+                continue;
+            }
+            $stmt->execute([
+                'via' => strtoupper(trim($row[0])),
+                'localita' => strtoupper(trim($row[1])),
+                'motivo' => trim($row[2])
+            ]);
+            $total++;
+            $added += $stmt->rowCount();
+        }
+        fclose($file);
+        $pdo->commit();
+        echo json_encode([
+            'success' => true,
+            'message' => "Segnalazioni importate: $added nuove su $total righe (le già presenti o già verificate non vengono riaperte)."
+        ]);
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        echo json_encode(['success' => false, 'error' => "Errore durante l'importazione delle segnalazioni: " . $e->getMessage()]);
+    }
+    exit;
+}
+
 try {
     $clear = isset($_POST['clear']) && $_POST['clear'] === 'true';
     $replace = isset($_POST['replace']) && $_POST['replace'] === 'true';

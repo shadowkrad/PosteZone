@@ -117,6 +117,16 @@ try {
         }
     }
 
+    // Se l'operatore ha confermato di aver verificato la via, chiude le segnalazioni aperte
+    // (sia col nome originale sia con quello eventualmente corretto)
+    if (isset($_POST['resolve_flags']) && $_POST['resolve_flags'] === '1') {
+        $origVia = isset($_POST['orig_via']) ? strtoupper(trim($_POST['orig_via'])) : $viaUpper;
+        $origLoc = isset($_POST['orig_localita']) ? strtoupper(trim($_POST['orig_localita'])) : $localitaUpper;
+        $stmtFlag = $pdo->prepare("UPDATE verifiche SET stato = 'VERIFICATA', verificata_il = CURRENT_TIMESTAMP
+            WHERE stato = 'APERTA' AND ((via = :via AND localita = :loc) OR (via = :ovia AND localita = :oloc))");
+        $stmtFlag->execute(['via' => $viaUpper, 'loc' => $localitaUpper, 'ovia' => $origVia, 'oloc' => $origLoc]);
+    }
+
     // If resolve_id is passed, remove from unmatched list
     if ($resolveId > 0) {
         $stmtDel = $pdo->prepare("DELETE FROM vie_incongruenti WHERE id = :resolve_id");

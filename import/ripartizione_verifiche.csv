@@ -1,0 +1,58 @@
+via;localita;motivo
+LOCALITA' PIEVE AL BAGNORO;AREZZO;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 15-17 (13A) e DISPARI_INTERVALLO 17-19 (13B). Verificare.
+LOCALITA' POLICIANO;AREZZO;"Nome simile a ""LOCALITA' PULICIANO"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' PULICIANO;AREZZO;"Nome simile a ""LOCALITA' POLICIANO"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+PIAZZETTA SOPRA I PONTI;AREZZO;"Nome simile a ""PIAZZETTA SOPRA PONTI"" gia' presente nello stradario: possibile duplicato da unire."
+PIAZZETTA SOPRA PONTI;AREZZO;"Nome simile a ""PIAZZETTA SOPRA I PONTI"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+STRADA STATALE SENESE ARETINA;AREZZO;Conflitto nei dati: INTERVALLO 49-49 con zone diverse (33 tenuta, 17A scartata). Verificare quale e' corretta.
+STRADA STATALE SENESE ARETINA;AREZZO;"Riga NON importata: intervallo civici ""Km 141,435"" non riconosciuto (zona 13A). Inserire le regole a mano."
+VIA 10 DICEMBRE 1948;AREZZO;"Nome simile a ""VIA DIECI DICEMBRE 1948"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA ANTONIO GUADAGNOLI;AREZZO;Conflitto nei dati: INTERVALLO 24-24 con zone diverse (30 tenuta, 4A scartata). Verificare quale e' corretta.
+VIA ARTURO CHIARI;AREZZO;Conflitto nei dati: INTERVALLO 53-53 con zone diverse (31 tenuta, 16A scartata). Verificare quale e' corretta.
+VIA CADUTI DI SAN POLO;AREZZO;La zona precedente (16A) e' stata sostituita dal file Excel (9B). Verificare.
+VIA DI SAN LEO;AREZZO;Conflitto nei dati: INTERVALLO 1-1 con zone diverse (5B tenuta, 6A scartata). Verificare quale e' corretta.
+VIA DI SAN LEO;AREZZO;Conflitto nei dati: INTERVALLO 13-13 con zone diverse (6A tenuta, 5B scartata). Verificare quale e' corretta.
+VIA DI SAN LEO;AREZZO;Conflitto nei dati: INTERVALLO 2-2 con zone diverse (5B tenuta, 6A scartata). Verificare quale e' corretta.
+VIA DI SAN LEO;AREZZO;Conflitto nei dati: INTERVALLO 36-36 con zone diverse (6A tenuta, 5B scartata). Verificare quale e' corretta.
+VIA DI SAN LEO;AREZZO;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 13-15 (5B) e DISPARI_INTERVALLO 15-17 (6A). Verificare.
+VIA DIECI DICEMBRE 1948;AREZZO;"Nome simile a ""VIA 10 DICEMBRE 1948"" gia' presente nello stradario: possibile duplicato da unire."
+VIA GIUSEPPE DI VITTORIO;AREZZO;La zona precedente (6A) e' stata sostituita dal file Excel (3B). Verificare.
+VIA MOLINARA;AREZZO;Conflitto nei dati: INTERVALLO 15-15 con zone diverse (31 tenuta, 5B scartata). Verificare quale e' corretta.
+VIA MOLINARA;AREZZO;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 17-19 (5B) e DISPARI_INTERVALLO 19-23 (31). Verificare.
+VIA PESCAIOLA;AREZZO;Conflitto nei dati: tutti i civici con zone diverse (16A tenuta, 5B scartata). Verificare quale e' corretta.
+VIALE DANTE;AREZZO;Conflitto nei dati: tutti i civici con zone diverse (16B tenuta, 5A scartata). Verificare quale e' corretta.
+PIAZZA MUNICIPIO;CASTIGLION FIBOCCHI;Conflitto nei dati: INTERVALLO 1-1 con zone diverse (32 tenuta, 7B scartata). Verificare quale e' corretta.
+VIA SETTE PONTI;CASTIGLION FIBOCCHI;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 1-11 (7A) e DISPARI_INTERVALLO 11-67 (7B). Verificare.
+VIA VAL DI CHIO;CASTIGLION FIORENTINO;"Nome simile a ""VIA VALLE DI CHIO"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA VALLE DI CHIO;CASTIGLION FIORENTINO;"Nome simile a ""VIA VAL DI CHIO"" gia' presente nello stradario: possibile duplicato da unire."
+VIA DELLA RIMEMBRANZA;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA DELLA RIMEMBRANZE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA DELLA RIMEMBRANZE;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA DELLA RIMEMBRANZA"" gia' presente nello stradario: possibile duplicato da unire."
+VIA DELLE CANNETE;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA DELLE CANNETTE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA DELLE CANNETTE;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA DELLE CANNETE"" gia' presente nello stradario: possibile duplicato da unire."
+VIA PIA DE' TOLOMEI;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA PIA DEI TOLOMEI"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA PIA DEI TOLOMEI;CIVITELLA IN VAL DI CHIANA;"Nome simile a ""VIA PIA DE' TOLOMEI"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' ISOLA;LUCIGNANO;"Nome simile a ""LOCALITA' ISOLE"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' ISOLE;LUCIGNANO;"Nome simile a ""LOCALITA' ISOLA"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+PIAZZA CADUTI PER LA LIBERTA';LUCIGNANO;"Nome simile a ""PIAZZA DEI CADUTI DELLA LIBERTA'"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+PIAZZA DEI CADUTI DELLA LIBERTA';LUCIGNANO;"Nome simile a ""PIAZZA CADUTI PER LA LIBERTA'"" gia' presente nello stradario: possibile duplicato da unire."
+VIA CASTELNUOVO;LUCIGNANO;"Nome simile a ""VIA DEL CASTELNOVO"" gia' presente nello stradario: possibile duplicato da unire."
+VIA DEL CASTELNOVO;LUCIGNANO;"Nome simile a ""VIA CASTELNUOVO"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA DELLA CONCIA;LUCIGNANO;"Nome simile a ""VIA DELLE CONCIE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA DELLE CONCIE;LUCIGNANO;"Nome simile a ""VIA DELLA CONCIA"" gia' presente nello stradario: possibile duplicato da unire."
+VIA CASTIGLIONI;MARCIANO DELLA CHIANA;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 23-25 (29A) e DISPARI_INTERVALLO 25-55 (29B). Verificare.
+LOCALITA' BUTA;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' BUTALE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+LOCALITA' BUTALE;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' BUTA"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' CASA NUOVA;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' CASE NUOVE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+LOCALITA' CASE NUOVE;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' CASA NUOVA"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' FOSCIO;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' FOSSACCIO"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+LOCALITA' FOSSACCIO;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' FOSCIO"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' LA CASA;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' LA CASINA"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+LOCALITA' LA CASINA;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' LA CASA"" gia' presente nello stradario: possibile duplicato da unire."
+LOCALITA' SAN LUCIANO;MONTE SAN SAVINO;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 81-133 (27A) e DISPARI_INTERVALLO 83-87 (27B). Verificare.
+LOCALITA' SAN LUCIANO;MONTE SAN SAVINO;Intervalli sovrapposti con zone diverse: PARI_INTERVALLO 78-534 (27A) e PARI_INTERVALLO 80-84 (27B). Verificare.
+LOCALITA' SANT'ANTIMO;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' SANT'ANTONIO"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+LOCALITA' SANT'ANTONIO;MONTE SAN SAVINO;"Nome simile a ""LOCALITA' SANT'ANTIMO"" gia' presente nello stradario: possibile duplicato da unire."
+PIAZZA DELLA CHIESA;MONTE SAN SAVINO;Conflitto nei dati: tutti i civici con zone diverse (26A tenuta, 27B scartata). Verificare quale e' corretta.
+VIA DELLA SCALETTA;MONTE SAN SAVINO;"Nome simile a ""VIA DELLE SCALETTE"" importato dall'Excel: possibile duplicato da unire (questa via resta senza zona)."
+VIA DELLE SCALETTE;MONTE SAN SAVINO;"Nome simile a ""VIA DELLA SCALETTA"" gia' presente nello stradario: possibile duplicato da unire."
+VIA PROCACCI;MONTE SAN SAVINO;Intervalli sovrapposti con zone diverse: DISPARI_INTERVALLO 57-63 (26B) e DISPARI_INTERVALLO 63-71 (28A). Verificare.
